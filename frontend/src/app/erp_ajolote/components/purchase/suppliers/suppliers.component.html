@@ -1,0 +1,121 @@
+<div class="grid">
+    <div class="col-12">
+        <div class="card px-6 py-6">
+            <p-toast></p-toast>
+            <p-toolbar styleClass="mb-4">
+                <ng-template pTemplate="left">
+                   
+                </ng-template>
+
+                <ng-template pTemplate="right">
+                    <button pButton pRipple label="Crear Nuevo" icon="pi pi-plus" class="p-button-success mr-2" (click)="openNew()"></button>
+                </ng-template>
+            </p-toolbar>
+
+            <p-table #dt [value]="suppliers" [columns]="cols" responsiveLayout="scroll" [rows]="10" [globalFilterFields]="['name', 'contact_name', 'contact_email', 'contact_phone']" [rows]="10" [paginator]="true" [rowsPerPageOptions]="[10,20,30]" [showCurrentPageReport]="true" currentPageReportTemplate="Mostrando del {first} al {last} de {totalRecords} proveedores" [(selection)]="selectedSuppliers" selectionMode="multiple" [rowHover]="true" dataKey="id">
+                <ng-template pTemplate="caption">
+                    <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+                        <h5 class="m-0">Administrar Proveedores</h5>
+                        <span class="block mt-2 md:mt-0 p-input-icon-left">
+                            <i class="pi pi-search"></i>
+                            <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Buscar..."  class="w-full sm:w-auto"/>
+                        </span>
+                    </div>
+                </ng-template>
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th style="width: 3rem">
+                            <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
+                        </th>
+                        <th pSortableColumn="name">Proveedor<p-sortIcon field="name"></p-sortIcon></th>
+                        <th pSortableColumn="contact_name">Contacto<p-sortIcon field="contact_name"></p-sortIcon></th>
+                        <th pSortableColumn="contact_email">Correo<p-sortIcon field="contact_email"></p-sortIcon></th>
+                        <th pSortableColumn="contact_phone">Teléfono<p-sortIcon field="contact_phone"></p-sortIcon></th>
+                        <th></th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-supplier>
+                    <tr>
+                        <td>
+                            <p-tableCheckbox [value]="supplier"></p-tableCheckbox>
+                        </td>
+                        <td style="width:14%; min-width:10rem;">
+                            <span class="p-column-title">Nombre</span>
+                            {{supplier.name}}
+                        </td>
+                        <td style="width:14%; min-width:10rem;">
+                            <span class="p-column-title">Contacto</span>
+                            {{supplier.contact_name}}
+                        </td>
+                        <td style="width:14%; min-width:10rem;">
+                            <span class="p-column-title">Correo</span>
+                            {{supplier.contact_email}}
+                        </td>
+                        <td style="width:14%; min-width:10rem;">
+                            <span class="p-column-title">Teléfono</span>
+                            {{supplier.contact_phone}}
+                        </td>
+                        <td>
+                            <div class="flex">
+                                <button pButton pRipple icon="pi pi-pencil" class="p-button-rounded p-button-success mr-2" (click)="editSupplier(supplier)"></button>
+                                <button pButton pRipple icon="pi pi-trash" class="p-button-rounded p-button-warning" (click)="deleteSupplier(supplier)"></button>
+                            </div>
+                        </td>
+                    </tr>
+                </ng-template>
+            </p-table>
+        </div>
+
+        <p-dialog [(visible)]="supplierDialog" [style]="{width: '450px'}" header="Proveedor" [modal]="true" class="p-fluid" (onHide)="hideDialog()">
+            <ng-template pTemplate="content">
+                
+                <div class="field">
+                    <label for="name">Nombre de Proveedor</label>
+                    <input type="text" pInputText id="name" [(ngModel)]="supplier.name" required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !supplier.name}"/>
+                    <small class="ng-dirty ng-invalid" *ngIf="submitted && !supplier.name">Por favor, especifique el nombre.</small>
+                </div>
+
+                <div class="field">
+                    <label for="contact_name">Nombre del Contacto</label>
+                    <input type="text" pInputText id="contact_name" [(ngModel)]="supplier.contact_name" required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !supplier.contact_name}"/>
+                    <small class="ng-dirty ng-invalid" *ngIf="submitted && !supplier.contact_name">Por favor, especifique el nombre.</small>
+                </div>
+
+                <div class="field">
+                    <label for="contact_email">Correo de Contacto</label>
+                    <input type="text" pInputText id="contact_email" [(ngModel)]="supplier.contact_email" required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !supplier.contact_name}"/>
+                    <small class="ng-dirty ng-invalid" *ngIf="submitted && !supplier.contact_email">Por favor, especifique el correo.</small>
+                </div>
+                
+                <div class="field">
+                    <label for="contact_phone">Teléfono de Contacto</label>
+                    <p-inputNumber id="contact_phone" inputId='integeronly' [(ngModel)]="supplier.contact_phone" [useGrouping]="false" autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !supplier.contact_phone}"/>
+                    <small class="ng-dirty ng-invalid" *ngIf="submitted && !supplier.contact_phone">Por favor, especifique el teléfono.</small>
+                </div>
+                
+                <div class="field">
+                    <label for="address">Dirección</label>
+                    <input type="text" pInputText id="address" [(ngModel)]="supplier.address" required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !supplier.address}"/>
+                    <small class="ng-dirty ng-invalid" *ngIf="submitted && !supplier.address">Por favor, especifique la dirección.</small>
+                </div>
+
+            </ng-template>
+
+            <ng-template pTemplate="footer">
+                <button pButton pRipple label="Cancelar" icon="pi pi-times" class="p-button-text" (click)="hideDialog()"></button>
+                <button pButton pRipple label="Guardar" icon="pi pi-check" class="p-button-text" (click)="saveSupplier()"></button>
+            </ng-template>
+        </p-dialog>
+
+        <p-dialog [(visible)]="deleteSupplierDialog" header="Atención" [modal]="true" [style]="{width:'450px'}">
+            <div class="flex align-items-center justify-content-center">
+                <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
+                <span *ngIf="supplier">¿Estás seguro de querer eliminar el proveedor   <b>{{supplier.name}}</b>?</span>
+            </div>
+            <ng-template pTemplate="footer">
+                <button pButton pRipple icon="pi pi-times" class="p-button-text" label="No" (click)="closeDeleteDialog()"></button>
+                <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Si" (click)="confirmDelete()"></button>
+            </ng-template>
+        </p-dialog>
+    </div>
+</div>

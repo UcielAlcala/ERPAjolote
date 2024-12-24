@@ -1,0 +1,328 @@
+<div class="grid">
+    <div class="col-12">
+        <div class="card px-6 py-6">
+            <p-toast></p-toast>
+            <p-toolbar styleClass="mb-4">
+                <ng-template pTemplate="left">
+                   
+                </ng-template>
+
+                <ng-template pTemplate="right">
+                    <button pButton pRipple label="Crear Nuevo" icon="pi pi-plus" class="p-button-success mr-2" (click)="openNew()"></button>
+                    <button pButton pRipple label="Delete" icon="pi pi-trash" class="p-button-danger" (click)="deleteSelectedPrintedPieces()" [disabled]="!selectedPPieces || !selectedPPieces.length"></button>
+                </ng-template>
+            </p-toolbar>
+
+            <p-table #dt [value]="pPieces" [columns]="cols" responsiveLayout="scroll" [rows]="10" [globalFilterFields]="['name', 'color', 'brand', 'price', 'type', 'sub_type']" [rows]="10" [paginator]="true" [rowsPerPageOptions]="[10,20,30]" [showCurrentPageReport]="true" currentPageReportTemplate="Mostrando del {first} al {last} de {totalRecords} Piezas Impresas" [(selection)]="selectedPPieces" selectionMode="multiple" [rowHover]="true" dataKey="id">
+                <ng-template pTemplate="caption">
+                    <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+                        <h5 class="m-0">Administrar Piezas Impresas</h5>
+                        <span class="block mt-2 md:mt-0 p-input-icon-left">
+                            <i class="pi pi-search"></i>
+                            <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Buscar..."  class="w-full sm:w-auto"/>
+                        </span>
+                    </div>
+                </ng-template>
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th style="width: 3rem">
+                            <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
+                        </th>
+                        <th pSortableColumn="name">Imagen <p-sortIcon field="image"></p-sortIcon></th>
+                        <th pSortableColumn="name">SKU <p-sortIcon field="sku"></p-sortIcon></th>
+                        <th pSortableColumn="name">Nombre <p-sortIcon field="name"></p-sortIcon></th>
+                        <th pSortableColumn="print_time">Tiempo de Impresión <p-sortIcon field="print_time"></p-sortIcon></th>
+                        <th pSortableColumn="cost">Costo Aproximado <p-sortIcon field="cost"></p-sortIcon></th>
+                        <th></th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-pPiece>
+                    <tr>
+                        <td style="width:14%; min-width:10rem;">
+                            <p-tableCheckbox [value]="pPiece"></p-tableCheckbox>
+                        </td>
+                        <td style="width:14%; min-width:10rem;"><span class="p-column-title">Image</span>
+                            <img  [src]="pPiece.image" alt="{{ pPiece.name }}" width="100" class="shadow-4" />
+                        </td>
+                        <td style="width:17.2%; min-width:10rem;">
+                            <span class="p-column-title">SKU</span>
+                            {{pPiece.sku}}
+                        </td>
+                        <td style="width:17.2%; min-width:10rem;">
+                            <span class="p-column-title">Nombre</span>
+                            {{pPiece.name}}
+                        </td>
+                        <td style="width:17.2%; min-width:10rem;">
+                            <span class="p-column-title">Tiempo de impresión</span>
+                            {{pPiece.print_time}}
+                        </td>
+                        <td style="width:17.2%; min-width:10rem;">
+                            <span class="p-column-title">Costo Aproximado</span>
+                            {{pPiece.cost | currency:'USD'}}
+                        </td>
+                        
+                        <td style="width:17.2%; min-width:10rem;">
+                            <div>
+                                <button pButton pRipple icon="pi pi-pencil" class="p-button-rounded p-button-success mr-2" (click)="editPPiece(pPiece)"></button>
+                                <button pButton pRipple icon="pi pi-trash" class="p-button-rounded p-button-warning" (click)="deletePPiece(pPiece)"></button>
+                            </div>
+                        </td>
+                    </tr>
+                </ng-template>
+            </p-table>
+            
+        </div>
+
+        <p-dialog [(visible)]="pPieceDialog" [style]="{width: '50%', height: '75%'}" header="Pieza Impresa" [modal]="true" class="p-fluid" [resizable]="true" [closable]="false">
+
+            <ng-template pTemplate="content">
+            
+            <p-tabView (activeIndexChange)="onTabChange($event)">
+                
+                <p-tabPanel header="Datos Pieza" >
+
+                        <div class="field">
+                            <label for="name">Imagen</label>
+                            <p-fileUpload 
+                                mode="basic"
+                                accept="image/*"
+                                (onSelect)="onSelect($event)"
+                                chooseLabel="Seleccionar Imagen">
+                            </p-fileUpload>
+                        </div>
+
+                        <div class="field">
+                            <label for="name">Nombre</label>
+                            <input type="text" pInputText id="name" [(ngModel)]="pPiece.name" required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !pPiece.name}"/>
+                            <small class="ng-dirty ng-invalid" *ngIf="submitted && !pPiece.name">Por favor, especifique el nombre.</small>
+                        </div>
+
+                        <div class="field">
+                            <label for="print_time">Tiempo de Impresión (min)</label>
+                            <p-inputNumber 
+                                inputId="print_time" 
+                                [(ngModel)]="pPiece.print_time"
+                                [required] = true
+                                /> 
+                            
+                            <small class="ng-dirty ng-invalid" *ngIf="submitted && !pPiece.print_time">Por favor, especifique el tiempo de impresión.</small>
+                        </div>
+                </p-tabPanel>
+
+                <p-tabPanel header="Materiales Utilizados">
+
+                    <p-toolbar styleClass="mb-4">
+                        
+                        <ng-template pTemplate="left">
+                        </ng-template>
+
+                        <ng-template pTemplate="right">
+                            <button pButton pRipple label="Añadir Material" icon="pi pi-plus" class="p-button-success mr-2" (click)="addMaterialControlForm()"></button>
+                        </ng-template>
+                    </p-toolbar>
+
+
+                    <p-card *ngIf="addMaterialCF" styleClass="mb-4" class="flex flex-column gap-3">
+
+                        <div class="field flex flex-column w-full mb-4" style="align-items: flex-end;">                         
+                            <i class="pi pi-times" (click)="cancelMaterial(material)" style="cursor: pointer;"></i>
+                        </div>
+                        
+                        <!-- Primera fila con el dropdown -->
+                        <div class="field flex flex-column w-full mb-4" styleClass="mb-4">
+                            <label for="material">Materiales Utilizados</label>
+                            <p-dropdown
+                            [showClear]="true"
+                            [(ngModel)]="material.material"
+                            optionLabel="name"
+                            optionValue="id"
+                            [filter]="true"
+                            filterBy="name"
+                            [resetFilterOnHide]="true"
+                            filterPlaceholder="Ingrese un nombre para buscar"
+                            [options]="displayedMaterials"
+                            placeholder="Seleccionar material">
+                            
+                                <ng-template let-material pTemplate="item">
+                                    <div class="flex align-items-center gap-2">
+                                        <img 
+                                            [src]="material.image"
+                                            style="width: 50px" />
+                                        <div>{{ material.name }}</div>
+                                    </div>
+                                </ng-template>
+                            
+                            </p-dropdown>
+                        </div>
+
+                        <!-- Segunda fila con Cantidad y Unidades -->
+                         <div class="flex flex-row w-full gap-3">
+
+                             <div styleClass="mb-4" class="field flex-auto mb-4">
+                                 <label for="material">Cantidad</label>
+                                 <p-inputNumber
+                                 mode="decimal"
+                                 [minFractionDigits]="2"
+                                 [(ngModel)]="material.quantity"
+                                 ></p-inputNumber>
+                                </div>
+                                
+                                <div styleClass="mb-4" class="field flex-auto mb-4">
+                                    <label for="unidades">Unidades</label>
+                                    <p-selectButton
+                                    [(ngModel)]="material.unit"
+                                    [options]="unidades"  
+                                    optionLabel="label" 
+                                    optionValue="value" />
+                                </div>
+                                
+                        </div>
+
+                        <div class="flex flex-row w-full gap-3" style="align-items: flex-end;">
+                                                                   
+                            <button pButton pRipple label="Cancelar Material" icon="pi pi-trash" class="p-button-danger" (click)="cancelMaterial(material)" ></button>
+                            <button pButton pRipple label="Confirmar Material" icon="pi pi-plus" class="p-button-success mr-2" (click)="confirmMaterial(material)"></button>
+                            
+                        </div>
+                    </p-card>
+
+                    <p-table [value]="pPiece.materials || []" responsiveLayout="scroll" [rows]="10">
+                        <ng-template pTemplate="caption">
+                            <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+                                <h5 class="m-0">Administrar Piezas Añadidas</h5>
+                            </div>
+                        </ng-template>
+
+                        <ng-template pTemplate="header">
+                            <tr>
+                                <th pSortableColumn="name">Material <p-sortIcon field="name"></p-sortIcon></th>
+                                <th pSortableColumn="print_time">Cantidad Utilizada <p-sortIcon field="print_time"></p-sortIcon></th>
+                                <th pSortableColumn="cost">Unidades<p-sortIcon field="cost"></p-sortIcon></th>
+                                <th></th>
+                            </tr>
+                        </ng-template>
+
+                        <ng-template pTemplate="body" let-material>
+                            <tr>
+                                <td style="width:14%; min-width:10rem;">
+                                    <span class="p-column-title">Nombre</span>
+                                    {{getMaterialNameById(material.material)}}
+                                </td>
+                                <td style="width:14%; min-width:10rem;">
+                                    <span class="p-column-title">Cantidad</span>
+                                    {{material.quantity}}
+                                </td>
+                                <td style="width:14%; min-width:10rem;">
+                                    <span class="p-column-title">Unidades</span>
+                                    {{material.unit}}
+                                </td>                                
+                                <td>
+                                    <div class="flex">                                        
+                                        <button pButton pRipple icon="pi pi-pencil" class="p-button-rounded p-button-success mr-2" (click)="editMaterial(material)"></button>
+                                        <button pButton pRipple icon="pi pi-trash" class="p-button-rounded p-button-warning" (click)="deleteMaterial(material)"></button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </ng-template>
+
+                    </p-table>
+
+                </p-tabPanel>
+                
+                <p-tabPanel header="Confirmar">
+                    <h4>Por favor verifique que la información aquí contenida sea la correcta antes de guardar.</h4>
+
+                        <p>Nombre de la pieza: <b>{{ this.pPiece.name }}</b></p>
+                        <p>Tiempo de Impresión: <b>{{ this.pPiece.print_time }}</b></p>
+                        <div *ngIf="pPiece.id">
+                            <img [src]="pPiece.image" [alt]="pPiece.name" width="100">
+                        </div>
+                        
+                        <p>Componentes de la Pieza:</p>
+
+                        <p-table [value]="pPiece.materials || []" responsiveLayout="scroll" [rows]="10">
+    
+                            <ng-template pTemplate="header">
+                                <tr>
+                                    <th pSortableColumn="name">Material <p-sortIcon field="name"></p-sortIcon></th>
+                                    <th pSortableColumn="print_time">Cantidad Utilizada <p-sortIcon field="print_time"></p-sortIcon></th>
+                                    <th pSortableColumn="cost">Unidades<p-sortIcon field="cost"></p-sortIcon></th>
+                                </tr>
+                            </ng-template>
+    
+                            <ng-template pTemplate="body" let-material>
+                                <tr>
+                                    <td style="width:14%; min-width:10rem;">
+                                        <span class="p-column-title">Nombre</span>
+                                        {{getMaterialNameById(material.material)}}
+                                    </td>
+                                    <td style="width:14%; min-width:10rem;">
+                                        <span class="p-column-title">Cantidad</span>
+                                        {{material.quantity}}
+                                    </td>
+                                    <td style="width:14%; min-width:10rem;">
+                                        <span class="p-column-title">Unidades</span>
+                                        {{material.unit}}
+                                    </td>
+                                </tr>
+                            </ng-template>
+    
+                        </p-table>
+                </p-tabPanel>
+            </p-tabView>
+
+            </ng-template> 
+
+            <ng-template pTemplate="footer">
+                <button pButton pRipple label="Cancelar" icon="pi pi-times" class="p-button-text" (click)="hideDialog()"></button>
+                <button pButton pRipple label="Guardar" icon="pi pi-check" class="p-button-text" (click)="savePPiece()" [disabled]="activeIndex !== 2"></button>
+            </ng-template>
+        </p-dialog>
+
+        <p-dialog [(visible)]="deletePPieceDialog" header="Atención" [modal]="true" [style]="{width:'450px'}">
+            <div class="flex align-items-center justify-content-center">
+                <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
+                <span *ngIf="pPiece">¿Estás seguro de querer eliminar la Pieza Impresa   <b>{{pPiece.name}}</b>?</span>
+            </div>
+            <ng-template pTemplate="footer">
+                <button pButton pRipple icon="pi pi-times" class="p-button-text" label="No" (click)="deletePPieceDialog = false"></button>
+                <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Si" (click)="confirmDelete(pPiece)"></button>
+            </ng-template>
+        </p-dialog>
+
+        <p-dialog [(visible)]="deletePPiecesDialog" header="Atención" [modal]="true" [style]="{width:'450px'}">
+            <div class="flex align-items-center justify-content-center">
+                <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
+                <span>¿Estás seguro que quierres borrar las Piezas Impresas seleccionadas?</span>
+            </div>
+            <ng-template pTemplate="footer">
+                <button pButton pRipple icon="pi pi-times" class="p-button-text" label="No" (click)="deletePPiecesDialog = false"></button>
+                <button pButton pRipple icon="pi pi-check" class="p-button-text" label="BORRAR" (click)="confirmDeleteSelected()"></button>
+            </ng-template>
+        </p-dialog>
+
+        <p-dialog [(visible)]="deleteMaterialDialog" header="Atención" [modal]="true" [style]="{width:'450px'}">
+            <div class="flex align-items-center justify-content-center">
+                <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
+                <span *ngIf="pPiece">¿Estás seguro de querer eliminar el Material de la Pieza Impresa   <b>{{pPiece.name}}</b>?</span>
+            </div>
+            <ng-template pTemplate="footer">
+                <button pButton pRipple icon="pi pi-times" class="p-button-text" label="No" (click)="deleteMaterialDialog = false"></button>
+                <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Si" (click)="confirmDeleteMaterial(material)"></button>
+            </ng-template>
+        </p-dialog>
+
+        <p-dialog [(visible)]="confirmUpdateMaterialDialog" header="Atención" [modal]="true" [style]="{width:'450px'}">
+            <div class="flex align-items-center justify-content-center">
+                <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
+                <span *ngIf="pPiece">¿Estás seguro de querer <b>sobre escribir</b> el Material de la Pieza Impresa   <b>{{pPiece.name}}</b>?</span>
+            </div>
+            <ng-template pTemplate="footer">
+                <button pButton pRipple icon="pi pi-times" class="p-button-text" label="No" (click)="confirmUpdateMaterialDialog = false"></button>
+                <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Si" (click)="confirmUpdateMaterial()"></button>
+            </ng-template>
+        </p-dialog>
+    </div>
+
+    
+</div>

@@ -1,0 +1,189 @@
+<div class="grid">
+    <div class="col-12">
+        <div class="card px-6 py-6">
+            <p-toast></p-toast>
+            <p-toolbar styleClass="mb-4">
+                <ng-template pTemplate="left">
+                   
+                </ng-template>
+
+                <ng-template pTemplate="right">
+                    <button pButton pRipple label="Crear Nuevo" icon="pi pi-plus" class="p-button-success mr-2" (click)="openNew()"></button>
+                    <button pButton pRipple label="Delete" icon="pi pi-trash" class="p-button-danger" (click)="deleteSelectedMaterials()" [disabled]="!selectedMaterials || !selectedMaterials.length"></button>
+                </ng-template>
+            </p-toolbar>
+
+            <p-table #dt [value]="materials" [columns]="cols" responsiveLayout="scroll" [rows]="10" [globalFilterFields]="['name', 'color', 'brand', 'price', 'type', 'sub_type']" [rows]="10" [paginator]="true" [rowsPerPageOptions]="[10,20,30]" [showCurrentPageReport]="true" currentPageReportTemplate="Mostrando del {first} al {last} de {totalRecords} materiales" [(selection)]="selectedMaterials" selectionMode="multiple" [rowHover]="true" dataKey="id">
+                <ng-template pTemplate="caption">
+                    <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+                        <h5 class="m-0">Administrar Materiales</h5>
+                        <span class="block mt-2 md:mt-0 p-input-icon-left">
+                            <i class="pi pi-search"></i>
+                            <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Buscar..."  class="w-full sm:w-auto"/>
+                        </span>
+                    </div>
+                </ng-template>
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th style="width: 3rem">
+                            <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
+                        </th>
+                        <th pSortableColumn="name">Imagen <p-sortIcon field="image"></p-sortIcon></th>
+                        <th pSortableColumn="name">SKU <p-sortIcon field="sku"></p-sortIcon></th>
+                        <th pSortableColumn="name">Nombre <p-sortIcon field="name"></p-sortIcon></th>
+                        <th pSortableColumn="type">Categoría Primaria <p-sortIcon field="type"></p-sortIcon></th>
+                        <th pSortableColumn="sub_type">Categoría Secundaria<p-sortIcon field="sub_type"></p-sortIcon></th>
+                        <th pSortableColumn="color">Color <p-sortIcon field="color"></p-sortIcon></th>
+                        <th pSortableColumn="brand">Marca <p-sortIcon field="brand"></p-sortIcon></th>
+                        <th pSortableColumn="cost_per_unit">Precio <p-sortIcon field="cost_per_unit"></p-sortIcon></th>
+                        <th></th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-material>
+                    <tr>
+                        <td>
+                            <p-tableCheckbox [value]="material"></p-tableCheckbox>
+                        </td>
+                        <td style="width:14%; min-width:10rem;"><span class="p-column-title">Image</span>
+                            <img  [src]="material.image" alt="{{ material.name }}" width="100" class="shadow-4" />
+                        </td>
+                        <td style="width:14%; min-width:10rem;">
+                            <span class="p-column-title">SKU</span>
+                            {{material.sku}}
+                        </td>
+                        <td style="width:14%; min-width:10rem;">
+                            <span class="p-column-title">Nombre</span>
+                            {{material.name}}
+                        </td>
+                        <td style="width:14%; min-width:8rem;">
+                            <span class="p-column-title">Categoría Primaria</span>
+                            {{material.type}}
+                        </td>
+                        <td style="width:14%; min-width:10rem;">
+                            <span class="p-column-title">Categoria</span>
+                            {{material.sub_type}}
+                        </td>
+                        <td style="width:14%; min-width:10rem;">
+                            <span class="p-column-title">Color</span>
+                            {{material.color}}
+                        </td>
+                        <td style="width:14%; min-width:10rem;">
+                            <span class="p-column-title">Marca</span>
+                            {{material.brand}}
+                        </td>
+                        <td style="width:14%; min-width:10rem;">
+                            <span class="p-column-title">Marca</span>
+                            {{material.cost_per_unit | currency:'USD'}}
+                        </td>
+                        <td>
+                            <div class="flex">
+                                <button pButton pRipple icon="pi pi-pencil" class="p-button-rounded p-button-success mr-2" (click)="editMaterial(material)"></button>
+                                <button pButton pRipple icon="pi pi-trash" class="p-button-rounded p-button-warning" (click)="deleteMaterial(material)"></button>
+                            </div>
+                        </td>
+                    </tr>
+                </ng-template>
+            </p-table>
+        </div>
+
+        <p-dialog [(visible)]="materialDialog" [style]="{width: '450px'}" header="Material" [modal]="true" class="p-fluid">
+            <ng-template pTemplate="content">
+                <div class="field">
+                    <label for="name">Imagen</label>
+                    <p-fileUpload 
+                        mode="basic" 
+                        name="demo[]" 
+                        accept="image/*"
+                        (onSelect)="onSelect($event)"
+                        chooseLabel="Seleccionar Imagen">
+                    </p-fileUpload>
+                </div>
+                
+                <div class="field">
+                    <label for="image">Nombre</label>
+                    <input type="text" pInputText id="name" [(ngModel)]="material.name" required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !material.name}"/>
+                    <small class="ng-dirty ng-invalid" *ngIf="submitted && !material.name">Por favor, especifique el nombre.</small>
+                </div>
+               
+                <div class="field">
+                    <label for="type">Categoría Primaria</label>
+                    <p-dropdown [(ngModel)]="material.type" inputId="type" optionValue="label" [options]="types" placeholder="Seleccionar">
+                        <ng-template pTemplate="selectedItem">
+                            <span *ngIf="material && material.type">{{material.type}}</span>
+                        </ng-template>
+                    </p-dropdown>
+                </div>
+                
+                <div class="field">
+                    <label for="type">Categoría Secundaria</label>
+                    <p-dropdown [(ngModel)]="material.sub_type" inputId="sub_type" optionValue="label" [options]="subTypes" placeholder="Seleccionar">
+                        <ng-template pTemplate="selectedItem">
+                            <span *ngIf="material && material.sub_type">{{material.sub_type}}</span>
+                        </ng-template>
+                    </p-dropdown>
+                </div>
+                
+                <div class="field">
+                    <label for="color">Color</label>
+                    <input type="text" pInputText id="color" [(ngModel)]="material.color" required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !material.color}"/>
+                    <small class="ng-dirty ng-invalid" *ngIf="submitted && !material.color">Por favor, especifique el color</small>
+                </div>
+
+                <div class="field">
+                    <label for="brand">Marca</label>
+                    <input type="text" pInputText id="brand" [(ngModel)]="material.brand" required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !material.brand}"/>
+                    <small class="ng-dirty ng-invalid" *ngIf="submitted && !material.brand">Por favor, especifique la marca</small>
+                </div>
+
+                <div class="formgrid grid">
+                    <div class="field col">
+                        <label for="cost_per_unit">Precio Unitario </label>
+                        <p-inputNumber id="cost_per_unit" [(ngModel)]="material.cost_per_unit" mode="currency" currency="USD" locale="en-US"></p-inputNumber>
+                    </div>
+
+                    <div class="field col">
+                        <label for="unit">Unidades</label>
+                        <p-dropdown [(ngModel)]="material.unit" inputId="unit" optionValue="value" optionLabel="label" [options]="units" placeholder="Seleccionar">
+                            <ng-template pTemplate="selectedItem">
+                                <span *ngIf="material && material.unit">{{material.unit}}</span>
+                            </ng-template>
+                        </p-dropdown>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label for="description">Descripción</label>
+                    <textarea id="description" pInputTextarea [(ngModel)]="material.description" required rows="3" cols="20"></textarea>
+                </div>
+
+            </ng-template>
+
+            <ng-template pTemplate="footer">
+                <button pButton pRipple label="Cancelar" icon="pi pi-times" class="p-button-text" (click)="hideDialog()"></button>
+                <button pButton pRipple label="Guardar" icon="pi pi-check" class="p-button-text" (click)="saveMaterial()"></button>
+            </ng-template>
+        </p-dialog>
+
+        <p-dialog [(visible)]="deleteMaterialDialog" header="Atención" [modal]="true" [style]="{width:'450px'}">
+            <div class="flex align-items-center justify-content-center">
+                <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
+                <span *ngIf="material">¿Estás seguro de querer eliminar el producto   <b>{{material.name}}</b>?</span>
+            </div>
+            <ng-template pTemplate="footer">
+                <button pButton pRipple icon="pi pi-times" class="p-button-text" label="No" (click)="deleteMaterialDialog = false"></button>
+                <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Si" (click)="confirmDelete(material)"></button>
+            </ng-template>
+        </p-dialog>
+
+        <p-dialog [(visible)]="deleteMaterialsDialog" header="Atención" [modal]="true" [style]="{width:'450px'}">
+            <div class="flex align-items-center justify-content-center">
+                <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
+                <span>¿Estás seguro que quierres borrar los materiales seleccionados?</span>
+            </div>
+            <ng-template pTemplate="footer">
+                <button pButton pRipple icon="pi pi-times" class="p-button-text" label="No" (click)="deleteMaterialsDialog = false"></button>
+                <button pButton pRipple icon="pi pi-check" class="p-button-text" label="BORRAR" (click)="confirmDeleteSelected()"></button>
+            </ng-template>
+        </p-dialog>
+    </div>
+</div>

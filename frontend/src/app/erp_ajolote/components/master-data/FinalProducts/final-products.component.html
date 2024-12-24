@@ -1,0 +1,332 @@
+<div class="grid">
+        <div class="col-12">
+            <div class="card px-6 py-6">
+                <p-toast></p-toast>
+                <p-toolbar styleClass="mb-4">
+                    <ng-template pTemplate="left">
+                   
+                    </ng-template>
+
+                    <ng-template pTemplate="right">
+                        <button pButton pRipple label="Crear Nuevo" icon="pi pi-plus" class="p-button-success mr-2" (click)="openNew()"></button>
+                        <button pButton pRipple label="Borrar" icon="pi pi-trash" class="p-button-danger"></button>
+                    </ng-template>
+                </p-toolbar>
+
+                <p-table #dt [value]="fProducts">
+
+                    <ng-template pTemplate="caption">
+                        <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+                            <h5 class="m-0">Administrar Productos Finales</h5>
+                            <span class="block mt-2 md:mt-0 p-input-icon-left">
+                                <i class="pi pi-search"></i>
+                                <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Buscar..."  class="w-full sm:w-auto"/>
+                            </span>
+                        </div>
+                    </ng-template>
+
+                    <ng-template pTemplate="header">
+                        <tr>
+                            <th style="width: 3rem">
+                                <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
+                            </th>
+                            <th pSortableColumn="name">Imagen <p-sortIcon field="image"></p-sortIcon></th>
+                            <th pSortableColumn="name">SKU <p-sortIcon field="sku"></p-sortIcon></th>
+                            <th pSortableColumn="name">Nombre <p-sortIcon field="name"></p-sortIcon></th>
+                            <th pSortableColumn="print_time">Costo Total <p-sortIcon field="print_time"></p-sortIcon></th>
+                            <th pSortableColumn="cost">Descripción <p-sortIcon field="cost"></p-sortIcon></th>
+                            <th></th>
+                        </tr>
+                    </ng-template>
+
+                    <ng-template pTemplate="body" let-fProduct>
+                        <tr>
+                            <td style="width:14%; min-width:10rem;">
+                                <p-tableCheckbox [value]="fProduct"></p-tableCheckbox>
+                            </td>
+                            <td style="width:14%; min-width:10rem;"><span class="p-column-title">Image</span>
+                                <img  [src]="fProduct.image" alt="{{ fProduct.name }}" width="100" class="shadow-4" />
+                            </td>
+                            <td style="width:17.2%; min-width:10rem;">
+                                <span class="p-column-title">SKU</span>
+                                {{fProduct.sku}}
+                            </td>
+                            <td style="width:17.2%; min-width:10rem;">
+                                <span class="p-column-title">Nombre</span>
+                                {{fProduct.name}}
+                            </td>
+                            <td style="width:17.2%; min-width:10rem;">
+                                <span class="p-column-title">Costo Total</span>
+                                {{fProduct.total_cost | currency:'USD'}}
+                            </td>
+                            <td style="width:17.2%; min-width:10rem;">
+                                <span class="p-column-title">Descripción</span>
+                                {{ fProduct.description }}
+                            </td>
+                            
+                            <td style="width:17.2%; min-width:10rem;">
+                                <div>
+                                    <button pButton pRipple icon="pi pi-pencil" class="p-button-rounded p-button-success mr-2" (click)="editFinalProduct(fProduct)"></button>
+                                    <button pButton pRipple icon="pi pi-trash" class="p-button-rounded p-button-warning" (click)="deleteFProduct(fProduct)" ></button>
+                                </div>
+                            </td>
+                        </tr>
+                    </ng-template>
+
+                </p-table>
+
+            </div>
+
+            <p-dialog [(visible)]="createFinalProductDialog" [style]="{width: '75%', height: '75%'}" header="Producto Final" [modal]="true" class="p-fluid" [resizable]="true" [closable]="false">
+
+                <ng-template pTemplate="content">
+                
+                <p-tabView (activeIndexChange)="onTabChange($event)">
+                    
+                    <p-tabPanel header="Datos Producto" >
+
+                            <div class="field">
+                                <label for="name">Imagen</label>
+                                <p-fileUpload 
+                                    mode="basic" 
+                                    accept="image/*"
+                                    (onSelect)="onSelect($event)"
+                                    chooseLabel="Seleccionar Imagen">
+                                </p-fileUpload>
+                            </div>
+
+                            <div class="field">
+                                <label for="name">Nombre</label>
+                                <input type="text" pInputText id="name" [(ngModel)]="fProduct.name" required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !fProduct.name}"/>
+                                <small class="ng-dirty ng-invalid" *ngIf="submitted && !fProduct.name">Por favor, especifique el nombre.</small>
+                            </div>
+    
+                            <div class="field">
+                                <label for="description">Descripción</label>
+                                <textarea id="description" pInputTextarea [(ngModel)]="fProduct.description" rows="3" cols="20"></textarea>
+                            </div>
+                    </p-tabPanel>
+    
+                    <p-tabPanel header="BOM">
+                        <p-toolbar styleClass="mb-4">
+                        
+                            <ng-template pTemplate="left">
+                            </ng-template>
+    
+                            <ng-template pTemplate="right">
+                                <button pButton pRipple label="Añadir Componente" icon="pi pi-plus" class="p-button-success mr-2" (click)=" addCompCF()"></button>
+                            </ng-template>
+                        </p-toolbar>
+
+                        <p-card *ngIf="addComponentCF" styleClass="mb-4" class="flex flex-column gap-3">
+
+                            <div class="field flex flex-column w-full mb-4" style="align-items: flex-end;">                         
+                                <i class="pi pi-times" style="cursor: pointer;"></i>
+                            </div>
+                            
+                            <!-- Primera fila con el dropdown -->
+                            <div class="flex flex-row w-full gap-3">
+
+                                <div class="field flex-auto mb-4" styleClass="mb-4">
+                                    <label for="object_id">Componente</label>
+                                    <p-dropdown
+                                    [(ngModel)]="newComponentData.data"
+                                    [showClear]="true"
+                                    optionLabel="name"
+                                    optionValue="data"
+                                    [filter]="true"
+                                    filterBy="name"
+                                    [resetFilterOnHide]="true"
+                                    filterPlaceholder="Ingrese un nombre para buscar"
+                                    [options]="insumos"
+                                    placeholder="Seleccionar material">
+                                    
+                                        <ng-template let-insumo pTemplate="item">
+                                            <div class="flex align-items-center gap-2">
+                                                <img 
+                                                    [src]="insumo.image"
+                                                    style="width: 50px" />
+                                                <div>{{ insumo.name }}</div>
+                                            </div>
+                                        </ng-template>
+                                    
+                                    </p-dropdown>
+                                </div>
+                            </div>
+    
+                            <!-- Segunda fila con Cantidad y Unidades -->
+                             <div class="flex flex-row w-full gap-3">
+                                 <div styleClass="mb-4" class="field mb-4">
+                                     <label for="material">Cantidad</label>
+                                     <p-inputNumber
+                                     [(ngModel)]="newComponent.quantity"
+                                     ></p-inputNumber>
+                                </div>
+                                    
+                            </div>
+
+                            <div class="flex flex-row w-full gap-3" style="align-items: flex-end;">
+                                                                       
+                                <button pButton pRipple label="Cancelar" icon="pi pi-trash" class="p-button-danger" (click)="cancelNewComponent()" ></button>
+                                <button pButton pRipple label="Confirmar" icon="pi pi-plus" class="p-button-success mr-2" (click)="addNewComponent()"></button>
+                                
+                            </div>
+                        </p-card>
+
+                        <p-table  *ngIf="fProduct.bom" [value]="fProduct.bom">
+                            
+                            <ng-template pTemplate="caption">
+                                <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+                                    <h5 class="m-0">Componentes</h5>
+                                </div>
+                            </ng-template>
+
+                            <ng-template pTemplate="header">
+                                <tr>
+                                    <th pSortableColumn="name">Tipo <p-sortIcon field="name"></p-sortIcon></th>
+                                    <th pSortableColumn="print_time">Componente <p-sortIcon field="print_time"></p-sortIcon></th>
+                                    <th pSortableColumn="cost">Cantidad <p-sortIcon field="cost"></p-sortIcon></th>
+                                    <th pSortableColumn="cost">Costo Unitario Componente <p-sortIcon field="cost"></p-sortIcon></th>
+                                    <th></th>
+                                </tr>
+                            </ng-template>
+
+                            <ng-template pTemplate="body" let-bom>
+                                <tr>
+                                    <td style="width:17.2%; min-width:10rem;">
+                                        <span class="p-column-title">Tipo</span>
+                                        {{ getContentTypeName(bom.content_type) }}
+                                    </td>
+                                    <td style="width:17.2%; min-width:10rem;">
+                                        <span class="p-column-title">Componente</span>
+                                        {{ getItemName(bom.content_type, bom.object_id) }}
+                                    </td>
+                                    <td style="width:17.2%; min-width:10rem;">
+                                        <span class="p-column-title">Cantidad</span>
+                                        {{ bom.quantity }}
+                                    </td>
+                                    <td style="width:17.2%; min-width:10rem;">
+                                        <span class="p-column-title">Costo Unitario Componente</span>
+                                        {{bom.cost | currency:'USD'}}
+                                    </td>                                    
+                                    
+                                    <td style="width:17.2%; min-width:10rem;">
+                                        <div>
+                                            <button pButton pRipple icon="pi pi-pencil" class="p-button-rounded p-button-success mr-2" (click)="editComponent(bom)"></button>
+                                            <button pButton pRipple icon="pi pi-trash" class="p-button-rounded p-button-warning" (click)="deleteComponent(bom)" ></button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                
+                            </ng-template>
+
+                        </p-table>
+    
+                    </p-tabPanel>
+
+                    
+                    
+                    <p-tabPanel header="Confirmar">
+
+
+                        <h4>Por favor verifique que la información aquí contenida sea la correcta antes de guardar.</h4>
+
+                        <p>Nombre de la pieza: <b>{{ this.fProduct.name }}</b></p>
+                        <p>Descripción: <b>{{ this.fProduct.description }}</b></p>
+
+                        <p>Componentes del Producto:</p>
+
+                        <p-table  *ngIf="fProduct.bom" [value]="fProduct.bom">
+                            
+                            <ng-template pTemplate="caption">
+                                <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+                                    <h5 class="m-0">Componentes</h5>
+                                </div>
+                            </ng-template>
+
+                            <ng-template pTemplate="header">
+                                <tr>
+                                    <th pSortableColumn="name">Tipo <p-sortIcon field="name"></p-sortIcon></th>
+                                    <th pSortableColumn="print_time">Componente <p-sortIcon field="print_time"></p-sortIcon></th>
+                                    <th pSortableColumn="cost">Cantidad <p-sortIcon field="cost"></p-sortIcon></th>
+                                </tr>
+                            </ng-template>
+
+                            <ng-template pTemplate="body" let-bom>
+                                <tr>
+                                    <td style="width:17.2%; min-width:10rem;">
+                                        <span class="p-column-title">Tipo</span>
+                                        {{ getContentTypeName(bom.content_type) }}
+                                    </td>
+                                    <td style="width:17.2%; min-width:10rem;">
+                                        <span class="p-column-title">Componente</span>
+                                        {{ getItemName(bom.content_type, bom.object_id) }}
+                                    </td>
+                                    <td style="width:17.2%; min-width:10rem;">
+                                        <span class="p-column-title">Cantidad</span>
+                                        {{ bom.quantity }}
+                                    </td>
+                                </tr>
+                            </ng-template>
+
+                        </p-table>
+
+
+
+
+                    </p-tabPanel>
+                </p-tabView>
+    
+                </ng-template> 
+    
+                <ng-template pTemplate="footer">
+                    <button pButton pRipple label="Cancelar" icon="pi pi-times" class="p-button-text" (click)="closeDialog()"></button>
+                    <button pButton pRipple label="Guardar" icon="pi pi-check" class="p-button-text"  [disabled]="activeIndex !== 2" (click)="createUpdateNewfProduct()"></button>
+                </ng-template>
+            </p-dialog>
+
+                                    <!-- Dialogos -->
+
+                                    <!-- Confirmar Edición de Componente Existente -->
+                                    <p-dialog [(visible)]="confirmEditComponentDialog" header="Atención" [modal]="true" [style]="{width:'450px'}">
+                                        <div class="flex align-items-center justify-content-center">
+                                            <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
+                                            <span *ngIf="fProduct">¿Estás seguro de querer <b>sobre escribir</b> el componente seleccionado?</span>
+                                        </div>
+                                        <ng-template pTemplate="footer">
+                                            <button pButton pRipple icon="pi pi-times" class="p-button-text" label="No" (click)="confirmEditComponentDialog = false"></button>
+                                            <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Si" (click)="confirmUpdateComponent()"></button>
+                                        </ng-template>
+                                    </p-dialog>
+
+
+                                    <!-- Confirmar Eliminación de Producto Final Existente -->
+                                    <p-dialog [(visible)]="confirmDeleteComponentDialog" header="Atención" [modal]="true" [style]="{width:'450px'}">
+                                        <div class="flex align-items-center justify-content-center">
+                                            <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
+                                            <span *ngIf="fProduct">¿Estás seguro de querer <b>eliminar</b> el componente seleccionado ?</span>
+                                        </div>
+                                        <ng-template pTemplate="footer">
+                                            <button pButton pRipple icon="pi pi-times" class="p-button-text" label="No" (click)="confirmDeleteComponentDialog = false"></button>
+                                            <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Si" (click)="confirmDeleteComponent()"></button>
+                                        </ng-template>
+                                    </p-dialog>
+
+                                    <p-dialog [(visible)]="confirmDeleteFProductDialog" header="Atención" [modal]="true" [style]="{width:'450px'}">
+                                        <div class="flex align-items-center justify-content-center">
+                                            <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
+                                            <span *ngIf="fProduct">¿Estás seguro de querer eliminar el Producto   <b>{{fProduct.name}}</b> y sus componentes?</span>
+                                        </div>
+                                        <ng-template pTemplate="footer">
+                                            <button pButton pRipple icon="pi pi-times" class="p-button-text" label="No" (click)="confirmDeleteFProductDialog = false"></button>
+                                            <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Si" (click)="deleteFinalProduct()"></button>
+                                        </ng-template>
+                                    </p-dialog>
+        </div>
+
+        
+
+
+        
+
+</div>

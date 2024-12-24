@@ -1,0 +1,30 @@
+.status-badge {
+    border-radius: var(--border-radius);
+    padding: 0.25em 0.5rem;
+    text-transform: uppercase;
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 0.3px;
+  }
+  .status-badge.status-Received {
+    background: var(--green-200);
+    color: var(--green-800);
+  }
+  .status-badge.status-Canceled {
+    background: var(--pink-200);
+    color: var(--pink-800);
+  }
+  .status-badge.status-Pending {
+    background: var(--yellow-200);
+    color: var(--yellow-800);
+  }
+
+  .status-badge.status-Closed {
+    background: var(--blue-200);
+    color: var(--blue-800);
+  }
+
+  .status-badge.status-Approved {
+    background: var(--purple-200);
+    color: var(--purple-800);
+  }
