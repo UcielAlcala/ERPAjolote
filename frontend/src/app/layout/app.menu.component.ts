@@ -13,6 +13,17 @@ export class AppMenuComponent implements OnInit {
     ngOnInit() {
         this.model = [
             {
+                label: 'Granja de Impresoras',
+                icon: 'pi pi-home',
+                items: [
+                    {
+                        label: 'Configurar Impresoras',
+                        icon: 'pi pi-fw pi-database',
+                        routerLink: ['/']
+                    },                     
+                ]
+            },
+            {
                 label: 'Registro de Productos',
                 icon: 'pi pi-home',
                 items: [

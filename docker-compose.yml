@@ -3,6 +3,7 @@ services:
   db:
     image: postgres:15
     container_name: erp_postgres
+    restart: always
     environment:
       - POSTGRES_DB=erp_db
       - POSTGRES_USER=erp_user
@@ -17,6 +18,7 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     container_name: erp_backend
+    restart: always
     ports:
       - "8000:8000"
     depends_on:
@@ -30,16 +32,22 @@ services:
       # - DB_USER=erp_user
       # - DB_PASSWORD=erp_password
       # - DB_HOST=db
+    volumes:
+      - ./backend:/app
 
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
     container_name: erp_frontend
+    restart: always
     ports:
       - "4200:4200"
     depends_on:
       - backend
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
 
 volumes:
   postgres_data:

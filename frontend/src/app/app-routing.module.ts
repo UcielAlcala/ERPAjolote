@@ -22,6 +22,7 @@ const routes: Routes = [
             { path: 'gestion-inventario', data: { breadcrumb: 'Gestión de Inventario' }, loadChildren: () => import('./erp_ajolote/components/WH-management/wh-management.module').then(m => m.WHManagementModule) },
             { path: 'datos-maestros', data: { breadcrumb: 'Datos Maestros' }, loadChildren: () => import('./erp_ajolote/components/master-data/inventory-management.module').then(m => m.InventoryManagementModule) },
             { path: 'compras', data: { breadcrumb: 'Compras' }, loadChildren: () => import('./erp_ajolote/components/purchase/purchase-management-routing.module').then(m => m.PurchaseManagementRoutingModule) },
+            { path: 'granja-impresoras', data: { breadcrumb: 'Granja de Impresoras' }, loadChildren: () => import('./erp_ajolote/components/printer-farm/printer-farm-routing.module').then(m => m.PrinterFarmRoutingModule) },
         ]
     },
     { path: 'auth', data: { breadcrumb: 'Auth' }, loadChildren: () => import('./demo/components/auth/auth.module').then(m => m.AuthModule) },
