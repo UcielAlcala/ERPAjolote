@@ -33,6 +33,8 @@ urlpatterns = [
     path('api/', include('erp_backend.inventory_transaction.urls')),
     path('api/', include('erp_backend.supplier.urls')),
     path('api/', include('erp_backend.purchase_order.urls')),
+    path('api/', include('erp_backend.printerConfig.urls')),
+    path('api/', include('erp_backend.printer_manager.urls')),
 ]
 
 if settings.DEBUG:

@@ -10,3 +10,8 @@ psycopg2-binary==2.9.9
 sqlparse==0.5.0
 typing_extensions==4.12.2
 whitenoise==6.5.0
+paho-mqtt
+channels
+channels_redis
+uvicorn
+

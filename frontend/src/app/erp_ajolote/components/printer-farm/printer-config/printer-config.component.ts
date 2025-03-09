@@ -1,72 +1,49 @@
 import { Component, OnInit } from '@angular/core';
-import { Product } from 'src/app/demo/api/product'; 
-import { ProductService } from 'src/app/demo/service/product.service';
 import { ConfirmationService, MessageService, PrimeNGConfig } from 'primeng/api';
 import { Table } from 'primeng/table';
-import { MaterialService } from '../../../service/materials.service'
-import { Material } from 'src/app/erp_ajolote/api/material';
+import { PrinterConfigService } from '../../../service/printerConfig.service'
+import { PrinterConfig } from 'src/app/erp_ajolote/api/printer_config';
 import { environment } from "src/environments/environment";
 
 
 @Component({
     templateUrl: './printer-config.component.html',
-    providers: [MessageService, ConfirmationService, MaterialService]
+    providers: [MessageService, ConfirmationService, PrinterConfigService]
 })
 export class PrinterConfigComponent implements OnInit {
 
-    // Url de carga de archivos:
-    mediaUrl = `${environment.mediaurl}/materials`
-    selectedFile: File | null = null;
+    printerConfigDialog: boolean = false;
+    deletePrinterConfigDialog: boolean = false;
+    deleteConfigsDialog: boolean = false;
 
-    productDialog: boolean = false;
-    materialDialog: boolean = false;
+    printerConfigs: PrinterConfig[] = [];
 
-    deleteProductDialog: boolean = false;
-    deleteMaterialDialog: boolean = false;
-
-    deleteProductsDialog: boolean = false;
-    deleteMaterialsDialog: boolean = false;
-
-    products: Product[] = [];
-    materials: Material[] = [];
-
-    product: Product = {};
-    material: Material = {
-            name: '',
-            type: '',       // e.g., Producción, Empaque, Envío
-            sub_type: '',    // e.g., Filamento, Pegamento, etc.
-            brand: '',
-            color: '',
-            unit: '',       // e.g., g, ml, m, unidades
-            cost_per_unit: 0,
-            description: ''
+    printer_config: PrinterConfig = {
+            hostname: '',
+            access_code: '',
+            serial_number: '',
+            printer_name: '', 
+            printer_type: '',
     };
 
-    selectedProducts: Product[] = [];
-    selectedMaterials: Material[] = [];
+    selectedPrinterConfigs: PrinterConfig[] = [];
 
     submitted: boolean = false;
 
     cols: any[] = [];
-
-    statuses: any[] = [];
     types: any[] = [];
-    subTypes: any[] = [];
-    units: any[] = [];
 
     rowsPerPageOptions = [5, 10, 20];
 
     
 
-    constructor(private config: PrimeNGConfig, private productService: ProductService, private messageService: MessageService, private confirmationService: ConfirmationService, private materialService: MaterialService) {
+    constructor(private config: PrimeNGConfig, private messageService: MessageService, private confirmationService: ConfirmationService, private printerConfigService: PrinterConfigService) {
         
     }
 
     ngOnInit() {
-        this.productService.getProducts().then(data => this.products = data);
-
-        this.materialService.getMaterials().subscribe( (materials) => {
-            this.materials = materials;
+        this.printerConfigService.getPrinterConfigs().subscribe( (printerConfigs) => {
+            this.printerConfigs = printerConfigs;
         })
 
         this.cols = [
@@ -80,65 +57,44 @@ export class PrinterConfigComponent implements OnInit {
         ];
         
         this.types = [
-            { label: 'Producción', value: 'production' },
-            { label: 'Empaque', value: 'packaging' },
-            { label: 'Envío', value: 'shipment' }
-        ];
-        
-        this.subTypes = [
-            { label: 'Filamento', value: 'filament' },
-            { label: 'Pegamento', value: 'glue' },
-            { label: 'Insumos', value: 'supplies' },
-            { label: 'Refacciones', value: 'spare_parts' },
-        ];
-
-        this.units = [
-            { label: 'Gramos', value: 'g' },
-            { label: 'Kilogramos', value: 'kg' },
-            { label: 'Pieza', value: 'pz' },
+            { label: 'P1P', value: 'P1P' },
+            { label: 'P1S', value: 'P1S' },
+            { label: 'A1 Mini', value: 'A1 Mini' }
         ];
     }
 
     openNew() {
         
-        this.material = {
-            name: '',
-            type: '',       // e.g., Producción, Empaque, Envío
-            sub_type: '',    // e.g., Filamento, Pegamento, etc.
-            brand: '',
-            color: '',
-            unit: '',       // e.g., g, ml, m, unidades
-            cost_per_unit: 0,
-            description: '',
-        }
+        this.printer_config = {
+            hostname: '',
+            access_code: '',
+            serial_number: '',
+            printer_name: '', 
+            printer_type: '',
+    };
         
-        this.materialDialog = true;
+        this.printerConfigDialog = true;
         this.submitted = false;
     }
 
-    deleteSelectedMaterials() {
-        this.deleteMaterialsDialog = true;
-    }
-
-    editProduct(product: Product) {
-        this.product = { ...product };
-        this.productDialog = true;
+    deleteSelectedPrinterConfigs() {
+        this.deleteConfigsDialog = true;
     }
     
-    editMaterial(material: Material) {
-        this.material = { ...material };
-        this.materialDialog = true;
+    editPrinterConfig(printer_config: PrinterConfig) {
+        this.printer_config = { ...printer_config };
+        this.printerConfigDialog = true;
     }
 
-    deleteMaterial(material: Material) {
-        this.deleteMaterialDialog = true;
-        this.material = { ...material };
+    deletePrinterConfig(printer_config: PrinterConfig) {
+        this.deletePrinterConfigDialog = true;
+        this.printer_config = { ...printer_config };
     }
 
     confirmDeleteSelected() {
-        this.selectedMaterials.map( material => {
-            this.materialService.deleteMaterial(material.id).subscribe( () => {
-                this.materials = this.materials.filter(mat => mat.id !== material.id)
+        this.selectedPrinterConfigs.map( printer_config => {
+            this.printerConfigService.deletePrinterConfig(printer_config.id).subscribe( () => {
+                this.printerConfigs = this.printerConfigs.filter(pc => pc.id !== printer_config.id)
                 }
             )
         
@@ -146,86 +102,67 @@ export class PrinterConfigComponent implements OnInit {
         
         )
         
-        this.selectedMaterials = [];
-        this.deleteMaterialsDialog = false    
+        this.selectedPrinterConfigs = [];
+        this.deleteConfigsDialog = false    
     }
 
-    confirmDelete(material: Material) {
-        this.materialService.deleteMaterial(material.id).subscribe( () => {
-            this.materials = this.materials.filter(mat => mat.id !== material.id)
-            this.messageService.add({ severity: 'success', summary: 'Exitoso', detail: 'Se ha borrado el producto seleccionado', life: 3000 });
-            this.deleteMaterialDialog = false;
+    confirmDelete(printer_config: PrinterConfig) {
+        this.printerConfigService.deletePrinterConfig(printer_config.id).subscribe( () => {
+            this.printerConfigs = this.printerConfigs.filter(pc => pc.id !== printer_config.id)
+            this.messageService.add({ severity: 'success', summary: 'Exitoso', detail: 'Se ha borrado la configuración seleccionada', life: 3000 });
+            this.deletePrinterConfigDialog = false;
         })
     }
 
     hideDialog() {
-        this.materialDialog = false;
+        this.printerConfigDialog = false;
         this.submitted = false;
     }
 
-    saveMaterial() {
+    savePrinterConfig() {
 
         // Si el material ya existe en la base de datos -> Se está editando el material.
-        if (this.material.id) {
+        if (this.printer_config.id) {
 
             const formData = new FormData();
-            formData.append('name', this.material.name);
-            formData.append('type', this.material.type);
-            formData.append('sub_type', this.material.sub_type);
-            formData.append('brand', this.material.brand);
-            formData.append('color', this.material.color);
-            formData.append('unit', this.material.unit);
-            formData.append('cost_per_unit', this.material.cost_per_unit.toString());
-            formData.append('description', this.material.description);
-
-            if (this.selectedFile) {
-                formData.append('image', this.selectedFile, this.selectedFile.name);
-            }
+            formData.append('printer_name', this.printer_config.printer_name);
+            formData.append('printer_type', this.printer_config.printer_type);
+            formData.append('hostname', this.printer_config.hostname);
+            formData.append('access_code', this.printer_config.access_code);
+            formData.append('serial_number', this.printer_config.serial_number);
 
 
-            this.materialService.updateMaterial(this.material.id, formData).subscribe( (material) => {
-                this.materials[this.findIndexById(material.id)] = material;
-                this.messageService.add({ severity: 'success', summary: 'Actualización Exitosa', detail: 'Se ha actualizado el material', life: 3000 });
-                this.materialDialog = false
+            this.printerConfigService.updatePrinterConfig(this.printer_config.id, formData).subscribe( (pc) => {
+                this.printerConfigs[this.findIndexById(pc.id)] = pc;
+                this.messageService.add({ severity: 'success', summary: 'Actualización Exitosa', detail: 'Se ha actualizado la impresora', life: 3000 });
+                this.printerConfigDialog = false
                 this.submitted = true;
-                this.selectedFile = null;
                 })
         } else {
 
             // El material es nuevo y no está en la base de datos
 
             const formData = new FormData();
-            formData.append('name', this.material.name);
-            formData.append('type', this.material.type);
-            formData.append('sub_type', this.material.sub_type);
-            formData.append('brand', this.material.brand);
-            formData.append('color', this.material.color);
-            formData.append('unit', this.material.unit);
-            formData.append('cost_per_unit', this.material.cost_per_unit.toString());
-            formData.append('description', this.material.description);
-
-            if (this.selectedFile) {
-                formData.append('image', this.selectedFile, this.selectedFile.name);
-            }
+            formData.append('printer_name', this.printer_config.printer_name);
+            formData.append('printer_type', this.printer_config.printer_type);
+            formData.append('hostname', this.printer_config.hostname);
+            formData.append('access_code', this.printer_config.access_code);
+            formData.append('serial_number', this.printer_config.serial_number);
     
-            this.materialService.createMaterial(formData).subscribe( (newMaterial) => {
-                this.materials.push(newMaterial)
+            this.printerConfigService.createPrinterConfig(formData).subscribe( (newPrinterConfig) => {
+                this.printerConfigs.push(newPrinterConfig)
                 
                 
-                this.material = {
-                    name: '',
-                    type: '',       // e.g., Producción, Empaque, Envío
-                    sub_type: '',    // e.g., Filamento, Pegamento, etc.
-                    brand: '',
-                    color: '',
-                    unit: '',       // e.g., g, ml, m, unidades,
-                    cost_per_unit: 0,
-                    description: '',
-                }
+                this.printer_config = {
+            hostname: '',
+            access_code: '',
+            serial_number: '',
+            printer_name: '', 
+            printer_type: '',
+    };
 
-                this.materialDialog = false
+                this.printerConfigDialog = false
                 this.submitted = true;
-                this.selectedFile = null;
     
             })
         }
@@ -233,8 +170,8 @@ export class PrinterConfigComponent implements OnInit {
 
     findIndexById(id: any): number {
         let index = -1;
-        for (let i = 0; i < this.materials.length; i++) {
-            if (this.materials[i].id === id) {
+        for (let i = 0; i < this.printerConfigs.length; i++) {
+            if (this.printerConfigs[i].id === id) {
                 index = i;
                 break;
             }
@@ -246,11 +183,6 @@ export class PrinterConfigComponent implements OnInit {
     onGlobalFilter(table: Table, event: Event) {
         table.filterGlobal((event.target as HTMLInputElement).value, 'contains');
     }
-
-    onSelect(event: any): void {
-        this.selectedFile = event.files[0];
-      }
-    
 
 
     

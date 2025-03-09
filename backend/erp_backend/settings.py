@@ -57,10 +57,26 @@ INSTALLED_APPS = [
     'erp_backend.batch_number',
     'erp_backend.supplier',
     'erp_backend.purchase_order',
+    'erp_backend.printerConfig',
+    'erp_backend.printer_manager',
     'corsheaders',
-    'django_filters'
+    'django_filters',
+    'channels',
 
 ]
+
+# Indica el path de la aplicación ASGI
+ASGI_APPLICATION = 'erp_backend.asgi.application'
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [("redis", 6379)],  # Asegúrate de que 'redis' resuelva, o usa 'localhost'
+        },
+    },
+}
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

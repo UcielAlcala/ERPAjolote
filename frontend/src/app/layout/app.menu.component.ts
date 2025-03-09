@@ -17,9 +17,14 @@ export class AppMenuComponent implements OnInit {
                 icon: 'pi pi-home',
                 items: [
                     {
+                        label: 'Dashboard',
+                        icon: 'pi pi-fw pi-home',
+                        routerLink: ['/granja-impresoras/dashboard']
+                    },                     
+                    {
                         label: 'Configurar Impresoras',
                         icon: 'pi pi-fw pi-database',
-                        routerLink: ['/']
+                        routerLink: ['/granja-impresoras/configurar-impresoras']
                     },                     
                 ]
             },

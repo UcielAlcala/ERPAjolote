@@ -1,0 +1,50 @@
+<div class="card">
+    <div class="text-900 font-medium text-4xl mb-4">Granja de Impresión</div>
+    <div class="grid -mt-3 -ml-3 -mr-3">
+        <div class="col-12 md:col-6 lg:col-4" *ngFor="let printer of printers">
+            <div class="p-2">
+                <div class="shadow-2 p-4 surface-card border-round">
+                    
+                    <div class="flex justify-content-between mb-3">
+
+                        <p-badge 
+                            [value]="printer.mqtt_state === 'ConnectionState.CONNECTED' ? 'Conectado' : 'Desconectado'" 
+                            [severity]="printer.mqtt_state === 'ConnectionState.CONNECTED' ? 'success' : 'danger'">
+                         </p-badge>
+
+                        <ng-container *ngIf="printer.mqtt_state === 'ConnectionState.CONNECTED'">
+                            <p-chip label="Desconectar" icon="pi pi-power-off" />
+                        </ng-container>
+                        <ng-container *ngIf="printer.mqtt_state === 'ConnectionState.DISCONNECTED'">
+                            <p-chip label="Conectar" icon="pi pi-power-off" />
+                        </ng-container>
+                    </div>
+
+                    <div class="relative mb-3">
+                        <img src="http://100.96.201.57:8000/media/printers/{{printer.printerConfig.printer_type}}.webp" class="w-full" />
+                    </div>
+                    <div
+                        class="flex justify-content-between align-items-center mb-3"
+                    >
+                        <span class="text-900 font-medium text-xl"
+                            >{{ printer.printerConfig.printer_name }}</span
+                        >
+                        <span>
+                            <span class="font-medium">Imprimiendo</span>
+                        </span>
+                    </div>
+                    
+                    <div class="col">
+                        <p>Trabajo: {{ printer.job_name}}</p>
+                        <p>Tiempo Restante: {{ printer.remaining_time}} </p>
+                    </div>
+
+                    <div class="col">
+                        <p>Progreso de Impresión: </p>
+                        <p-progressBar [value]=50 ></p-progressBar>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
